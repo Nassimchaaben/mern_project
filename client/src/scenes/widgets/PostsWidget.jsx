@@ -1,12 +1,14 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { setPosts } from "state";
 import PostWidget from "./PostWidget";
+import axios from "axios";
 
 const PostsWidget = ({ userId, isProfile = false }) => {
   const dispatch = useDispatch();
   const posts = useSelector((state) => state.posts);
   const token = useSelector((state) => state.token);
+  const [users, setUsers]=useState([])
 
   const getPosts = async () => {
     const response = await fetch("http://localhost:3001/posts", {
@@ -16,6 +18,13 @@ const PostsWidget = ({ userId, isProfile = false }) => {
     const data = await response.json();
     dispatch(setPosts({ posts: data }));
   };
+
+  useEffect(()=>{
+    axios.get(`http://localhost:3001/users`)
+    .then(res=>setUsers(...users,res.data))
+    },[])
+  
+  const idArray=users.map(user=>user._id)
 
   const getUserPosts = async () => {
     const response = await fetch(
@@ -39,7 +48,7 @@ const PostsWidget = ({ userId, isProfile = false }) => {
 
   return (
     <>
-      {posts.map(
+      {posts.map( 
         ({
           _id,
           userId,
@@ -51,7 +60,7 @@ const PostsWidget = ({ userId, isProfile = false }) => {
           userPicturePath,
           likes,
           comments,
-        }) => (
+        }) => ( idArray.includes(userId) ?
           <PostWidget
             key={_id}
             postId={_id}
@@ -64,6 +73,7 @@ const PostsWidget = ({ userId, isProfile = false }) => {
             likes={likes}
             comments={comments}
           />
+          :null
         )
       )}
     </>

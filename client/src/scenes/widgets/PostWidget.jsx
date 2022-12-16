@@ -2,15 +2,18 @@ import {
   ChatBubbleOutlineOutlined,
   FavoriteBorderOutlined,
   FavoriteOutlined,
-  ShareOutlined,
+  Delete,
+  
+  
 } from "@mui/icons-material";
-import { Box, Divider, IconButton, Typography, useTheme } from "@mui/material";
+import { Box, Divider, IconButton, Typography, useTheme,TextField } from "@mui/material";
 import FlexBetween from "components/FlexBetween";
 import Friend from "components/Friend";
 import WidgetWrapper from "components/WidgetWrapper";
 import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { setPost } from "state";
+import PostsWidget from "./PostsWidget";
 
 const PostWidget = ({
   postId,
@@ -24,6 +27,7 @@ const PostWidget = ({
   comments,
 }) => {
   const [isComments, setIsComments] = useState(false);
+  const [comment, setComment] = useState('');
   const dispatch = useDispatch();
   const token = useSelector((state) => state.token);
   const loggedInUserId = useSelector((state) => state.user._id);
@@ -47,6 +51,36 @@ const PostWidget = ({
     dispatch(setPost({ post: updatedPost }));
   };
 
+  const deletePost = async () => {
+   const response = await fetch (`http://localhost:3001/posts/${postId}/delete`, {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-type": "application/json"
+      }
+      
+    });
+    
+   
+    const updatedPost = await response.json();
+    dispatch(setPost({ post: updatedPost }));
+  };
+
+  const addComment = async () => {
+    setComment(comment)
+    const response = await fetch(`http://localhost:3001/posts/${postId}/comment`, {
+      method: "PUT",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body:JSON.stringify({ userId: loggedInUserId ,comment:comment }),
+    });
+    const updatedPost = await response.json();
+    addComment(setPost({ post: updatedPost }));
+
+  };
+  
   return (
     <WidgetWrapper m="2rem 0">
       <Friend
@@ -88,8 +122,9 @@ const PostWidget = ({
           </FlexBetween>
         </FlexBetween>
 
-        <IconButton>
-          <ShareOutlined />
+        <IconButton onClick={deletePost} >
+          {postUserId===loggedInUserId?<Delete />:null}
+          {/* <Delete/> */}
         </IconButton>
       </FlexBetween>
       {isComments && (
@@ -98,13 +133,26 @@ const PostWidget = ({
             <Box key={`${name}-${i}`}>
               <Divider />
               <Typography sx={{ color: main, m: "0.5rem 0", pl: "1rem" }}>
-                {comment}
+                {comment.comment}
               </Typography>
             </Box>
           ))}
           <Divider />
         </Box>
       )}
+           <Box
+      sx={{
+        width: 500,
+        maxWidth: '100%',
+      }}
+    >
+      <form onSubmit={addComment}>
+      <FlexBetween style={{gap:"20px"}}>
+
+      <TextField fullWidth label="Comment" id="fullWidth" onChange={e=>setComment(e.target.value)}/>
+      </FlexBetween>
+      </form>
+    </Box>
     </WidgetWrapper>
   );
 };

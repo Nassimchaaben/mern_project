@@ -71,3 +71,28 @@ export const likePost = async (req, res) => {
     res.status(404).json({ message: err.message });
   }
 };
+
+//DELETE//
+
+export const deletePost = async (req, res) => {
+  Post.deleteOne({ _id: req.params.id })
+  .then(result => res.json({ result: result }))
+  .catch(err => res.status(400).json({ message: "Something went wrong", error: err }));
+};
+
+
+//ADDcomment// 
+export const  addComment= async(req , res)=>{
+
+  Post.findOneAndUpdate(
+      { _id: req.params.id },
+      { $push: { comments: req.body } },
+      {
+        new: true,
+        runValidators: true,
+      }
+    )
+      .then((comment) => res.json(comment))
+      .catch((err) => res.status(400).json(err));
+};
+

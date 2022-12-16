@@ -1,4 +1,5 @@
 import { useState } from "react";
+import Oauth from '../../components/Oauth';
 import {
   Box,
   Button,
@@ -79,10 +80,11 @@ const Form = () => {
   };
 
   const login = async (values, onSubmitProps) => {
+
     const loggedInResponse = await fetch("http://localhost:3001/auth/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(values),
+      body: JSON.stringify(values)|| Oauth.onSuccess
     });
     const loggedIn = await loggedInResponse.json();
     onSubmitProps.resetForm();
@@ -247,6 +249,7 @@ const Form = () => {
             >
               {isLogin ? "LOGIN" : "REGISTER"}
             </Button>
+            <Oauth/>
             <Typography
               onClick={() => {
                 setPageType(isLogin ? "register" : "login");
